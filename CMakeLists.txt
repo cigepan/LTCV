@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(Label2D VERSION 0.1 LANGUAGES CXX)
+project(LTCV VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -40,13 +40,13 @@ set(PROJECT_SOURCES
 #
 # CImgProcCus.h CImgProcCus.cpp
 
-qt_add_executable(Label2D
+qt_add_executable(LTCV
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
     Resource.qrc
 )
 
-target_link_libraries(Label2D PRIVATE
+target_link_libraries(LTCV PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     opencv_world4100.lib
     libopencv_core4100.dll.a
@@ -59,9 +59,9 @@ target_link_libraries(Label2D PRIVATE
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
 if(${QT_VERSION} VERSION_LESS 6.1.0)
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.Label2D)
+  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.LTCV)
 endif()
-set_target_properties(Label2D PROPERTIES
+set_target_properties(LTCV PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -70,12 +70,12 @@ set_target_properties(Label2D PROPERTIES
 )
 
 include(GNUInstallDirs)
-install(TARGETS Label2D
+install(TARGETS LTCV
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(Label2D)
+    qt_finalize_executable(LTCV)
 endif()
