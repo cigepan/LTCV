@@ -1,0 +1,9 @@
+Auth: CaiPeng
+For: ShenYuan
+System: Windws10 X64
+Qt: 6.7.2
+Opencv: 4.10.0
+Mingw: 11.2-bit64
+Version Log:
+20240705：添加方案编辑交互
+20240704：支持文件列表加载，图片显示，基本处理过程封装

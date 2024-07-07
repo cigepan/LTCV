@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>version.txt</file>
+        <file>readme.txt</file>
+    </qresource>
+</RCC>
