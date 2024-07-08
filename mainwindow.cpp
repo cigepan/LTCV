@@ -67,6 +67,7 @@ SPMSG MainWindow::InitUI()
     ui->comboBox_way->setCurrentText(Cfg("comboBox_way").toString());
     ui->spinBox_pensize->setValue(Cfg("spinBox_pensize").toInt());
     ui->checkBox_editen->setChecked(Cfg("checkBox_editen").toBool());
+    ui->checkBox_follow->setChecked(Cfg("checkBox_follow").toBool());
     return _ok;
 }
 
@@ -142,7 +143,7 @@ void MainWindow::on_listWidget_files_currentTextChanged(const QString &currentTe
     slotProcess2D();
 }
 
-SPMSG MainWindow::slotProcess2D(CImgProc* p)
+SPMSG MainWindow::slotProcess2D(CImgProc* pCurProc)
 {
     auto item = ui->listWidget_files->currentItem();
     if (!item) { return _null; }
@@ -151,32 +152,28 @@ SPMSG MainWindow::slotProcess2D(CImgProc* p)
     m_listMat << cv::imread(img_fio.absoluteFilePath().toStdString().c_str());
     auto lay_way = ui->scrollAreaWidgetContents->layout();
     auto size = lay_way->count();
-    const auto last_tab_idx = [&](){
-        if (ui->tabWidget_2D->currentIndex()>-1){
-            return ui->tabWidget_2D->currentIndex();
-        } else {
-            return Cfg("tabWidget_2D").toInt();
-        }
-    }();
+    const auto tab_idx_last = ui->tabWidget_2D->currentIndex();
     for (auto i=0; i<ui->tabWidget_2D->count(); i++){
         ui->tabWidget_2D->widget(i)->deleteLater();
     } ui->tabWidget_2D->clear();
     auto src = MatToIMG(m_listMat.last());
+    int tab_idx_follow = 0;
     ui->tabWidget_2D->addTab(new CWidget2D(src), "原图");
     for (auto idx=0; idx<size; idx++){
         auto item = lay_way->itemAt(idx);
         auto pw = item->widget();
         if (!pw) { continue; }
         auto proc = dynamic_cast<CImgProc*>(pw);
+        if (proc == pCurProc){ tab_idx_follow = ui->tabWidget_2D->count(); }
         if (!proc){ continue; }
         if (!proc->Enable()) { proc->setStyleSheet(GSS_COLOR("#808080")); continue; }
         m_listMat << Mat();
         auto res = proc->Process(m_listMat[m_listMat.size()-2], m_listMat.last());
         proc->setStyleSheet((res->ok()?GSS_COLOR("#00AA00"):GSS_COLOR("#AA0000")));
-        if (!res->ok()) { return res; }
+        if (!res->ok()) { break; }
         auto sp = MatToIMG(m_listMat.last());
         if (!sp) { continue; }
-        ui->tabWidget_2D->addTab(new CWidget2D(sp), proc->Title());
+        ui->tabWidget_2D->addTab(new CWidget2D(sp), proc->GrpTitle());
     }
     auto& dsc = m_listMat.last();
     if (ui->radioButton_orgsize->isChecked()){
@@ -185,7 +182,15 @@ SPMSG MainWindow::slotProcess2D(CImgProc* p)
         ui->spinBox_save_imgch->setValue(dsc.channels());
         ui->comboBox_save_imgsuffix->setCurrentText(img_fio.suffix());
     }
-    ui->tabWidget_2D->setCurrentIndex(last_tab_idx);
+    if (ui->checkBox_follow->isChecked()){
+        ui->tabWidget_2D->setCurrentIndex(tab_idx_follow);
+    } else {
+        if (0>tab_idx_last || ui->tabWidget_2D->count()<=tab_idx_last){
+            ui->tabWidget_2D->setCurrentIndex(ui->tabWidget_2D->count()-1);
+        } else {
+            ui->tabWidget_2D->setCurrentIndex(tab_idx_last);
+        }
+    }
     return _ok;
 }
 
@@ -237,16 +242,16 @@ SPMSG MainWindow::AddProc(CImgProc* pProc, int nIDX)
         delete p;
         slotProcess2D();
     });
-    // connect(pProc, &CImgProc::sigAddNext, [&](CImgProc* p){
-    //     auto idx = m_listProc.indexOf(p);
-    //     if (idx<0) { return; }
-    //     auto sel_proc = CImgProc::SelectProc();
-    //     if (!sel_proc->ok()){ return; }
-    //     auto new_proc = CImgProc::NewProc(sel_proc->body);
-    //     if (!new_proc){ return; }
-    //     AddProc(new_proc, idx);
-    //     slotProcess2D();
-    // });
+    connect(pProc, &CImgProc::sigAddPrev, [&](CImgProc* p){
+        auto idx = m_listProc.indexOf(p);
+        if (idx<0) { return; }
+        auto sel_proc = CImgProc::SelectProc();
+        if (!sel_proc->ok()){ return; }
+        auto new_proc = CImgProc::NewProc(sel_proc->body);
+        if (!new_proc){ return; }
+        AddProc(new_proc, idx);
+        slotProcess2D();
+    });
     return _ok;
 }
 void MainWindow::on_pushButton_newway_clicked()
@@ -262,7 +267,7 @@ void MainWindow::on_pushButton_newway_clicked()
 void MainWindow::on_pushButton_procadd_clicked()
 {
     if (ui->comboBox_way->currentIndex()<0){
-        return SPFAIL("请先创建选定一个方案")->tip();
+        return on_pushButton_newway_clicked();
     }
     auto sel_proc = CImgProc::SelectProc();
     if (!sel_proc->ok()){ return; }
@@ -353,5 +358,11 @@ void MainWindow::on_checkBox_editen_clicked()
 {
     SetCfg("checkBox_editen", ui->checkBox_editen->isChecked());
     CWidget2D::Tool().enable = ui->checkBox_editen->isChecked();
+}
+
+
+void MainWindow::on_checkBox_follow_clicked()
+{
+    SetCfg("checkBox_follow", ui->checkBox_follow->isChecked());
 }
 

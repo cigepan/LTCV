@@ -2,27 +2,24 @@
 
 //---------------------------------CImgProc_GaussianBlur--------------------------------------
 CImgProc_GaussianBlur::CImgProc_GaussianBlur(const QJsonObject& args, QWidget *parent)
-    : CImgProc(parent)
+    : CImgProc(args, parent)
 {
+    auto grp = NewGrp<QHBoxLayout>();
     {
-        auto ksize = new CProcArgs_QSpinBox(this);
-        Args["ksize"] = ksize;
+        auto ksize = NewArg<CProcArgs_QSpinBox>("ksize", grp);
         ksize->Init(args.value("ksize").toInt(5));
         ksize->UI<QSpinBox>()->setRange(1, 255);
     }
     {
-        auto sigmaX = new CProcArgs_QDoubleSpinBox(this);
-        Args["sigmaX"] = sigmaX;
+        auto sigmaX = NewArg<CProcArgs_QDoubleSpinBox>("sigmaX", grp);
         sigmaX->Init(args.value("sigmaX").toDouble(0.0));
         sigmaX->UI<QDoubleSpinBox>()->setRange(0.0, 255.0);
     }
     {
-        auto sigmaY = new CProcArgs_QDoubleSpinBox(this);
-        Args["sigmaY"] = sigmaY;
+        auto sigmaY = NewArg<CProcArgs_QDoubleSpinBox>("sigmaY", grp);
         sigmaY->Init(args.value("sigmaY").toDouble(0.0));
         sigmaY->UI<QDoubleSpinBox>()->setRange(0.0, 255.0);
     }
-    InitUI(args);
 }
 
 SPMSG CImgProc_GaussianBlur::Process(Mat& src, Mat& dst)
@@ -40,15 +37,13 @@ SPMSG CImgProc_GaussianBlur::Process(Mat& src, Mat& dst)
 
 //---------------------------------CImgProc_medianBlur--------------------------------------
 CImgProc_medianBlur::CImgProc_medianBlur(const QJsonObject& args, QWidget *parent)
-    : CImgProc(parent)
+    : CImgProc(args, parent)
 {
     {
-        auto ksize = new CProcArgs_QSpinBox(this);
-        Args["ksize"] = ksize;
+        auto ksize = NewArg<CProcArgs_QSpinBox>("ksize");
         ksize->Init(args.value("ksize").toInt(5));
         ksize->UI<QSpinBox>()->setRange(1, 255);
     }
-    InitUI(args);
 }
 
 SPMSG CImgProc_medianBlur::Process(Mat& src, Mat& dst)

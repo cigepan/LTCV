@@ -2,18 +2,17 @@
 
 //---------------------------------CImgProc_cvtColor--------------------------------------
 CImgProc_cvtColor::CImgProc_cvtColor(const QJsonObject& args, QWidget *parent)
-    : CImgProc(parent)
+    : CImgProc(args, parent)
 {
+    auto grp = NewGrp<QHBoxLayout>();
     {
-        auto code = new CProcArgs_QComboBox(this);
-        Args["code"] = code;
+        auto code = NewArg<CProcArgs_QComboBox>("code", grp);
         code->Init(args.value("code").toString("COLOR_BGR2GRAY"), {{
                                                    {COLOR_BGR2GRAY,{"COLOR_BGR2GRAY","COLOR_BGR2GRAY"}},
                                                    {COLOR_RGB2GRAY,{"COLOR_RGB2GRAY","COLOR_RGB2GRAY"}},
                                                    {COLOR_BGR2RGB,{"COLOR_BGR2RGB","COLOR_BGR2RGB"}},
                                                }});
     }
-    InitUI(args);
 }
 
 SPMSG CImgProc_cvtColor::Process(Mat& src, Mat& dst)
@@ -29,43 +28,38 @@ SPMSG CImgProc_cvtColor::Process(Mat& src, Mat& dst)
 
 //---------------------------------CImgProc_adaptiveThreshold--------------------------------------
 CImgProc_adaptiveThreshold::CImgProc_adaptiveThreshold(const QJsonObject& args, QWidget *parent)
-    : CImgProc(parent)
+    : CImgProc(args, parent)
 {
+    auto grp = NewGrp<QVBoxLayout>();
     {
-        auto maxValue = new CProcArgs_QDoubleSpinBox(this);
-        Args["maxValue"] = maxValue;
+        auto maxValue = NewArg<CProcArgs_QDoubleSpinBox>("maxValue", grp);
         maxValue->Init(args.value("maxValue").toDouble(255.0));
         maxValue->UI<QDoubleSpinBox>()->setRange(0.0, 255.0);
     }
     {
-        auto adaptiveMethod = new CProcArgs_QComboBox(this);
-        Args["adaptiveMethod"] = adaptiveMethod;
+        auto adaptiveMethod = NewArg<CProcArgs_QComboBox>("adaptiveMethod", grp);
         adaptiveMethod->Init(args.value("adaptiveMethod").toString("ADAPTIVE_THRESH_MEAN_C"), {{
                                                    {ADAPTIVE_THRESH_MEAN_C,{"ADAPTIVE_THRESH_MEAN_C","ADAPTIVE_THRESH_MEAN_C"}},
                                                    {ADAPTIVE_THRESH_GAUSSIAN_C,{"ADAPTIVE_THRESH_GAUSSIAN_C","ADAPTIVE_THRESH_GAUSSIAN_C"}},
                                                }});
     }
     {
-        auto thresholdType = new CProcArgs_QComboBox(this);
-        Args["thresholdType"] = thresholdType;
+        auto thresholdType = NewArg<CProcArgs_QComboBox>("thresholdType", grp);
         thresholdType->Init(args.value("thresholdType").toString("THRESH_BINARY"), {{
                                                    {THRESH_BINARY,{"THRESH_BINARY","THRESH_BINARY"}},
                                                    {THRESH_BINARY_INV,{"THRESH_BINARY_INV","THRESH_BINARY_INV"}},
                                                }});
     }
     {
-        auto blockSize = new CProcArgs_QSpinBox(this);
-        Args["blockSize"] = blockSize;
+        auto blockSize = NewArg<CProcArgs_QSpinBox>("blockSize", grp);
         blockSize->Init(args.value("blockSize").toInt(5));
         blockSize->UI<QSpinBox>()->setRange(3, 255);
     }
     {
-        auto C = new CProcArgs_QDoubleSpinBox(this);
-        Args["C"] = C;
+        auto C = NewArg<CProcArgs_QDoubleSpinBox>("C", grp);
         C->Init(args.value("C").toDouble(0.0));
         C->UI<QDoubleSpinBox>()->setRange(0.0, 255.0);
     }
-    InitUI(args);
 }
 
 SPMSG CImgProc_adaptiveThreshold::Process(Mat& src, Mat& dst)

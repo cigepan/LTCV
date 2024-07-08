@@ -34,11 +34,8 @@ set(PROJECT_SOURCES
         CImgProcFilter.h CImgProcFilter.cpp
         CImgProcMph.h CImgProcMph.cpp
         CImgProcAdv.h CImgProcAdv.cpp
+        CImgProcCus.h CImgProcCus.cpp
 )
-
-#
-#
-# CImgProcCus.h CImgProcCus.cpp
 
 qt_add_executable(LTCV
     MANUAL_FINALIZATION

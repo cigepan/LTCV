@@ -12,9 +12,38 @@ const StMap<CImgProc::EmGroup> CImgProc::smGrp={
         {ENDF,{"ENDF","未定义"}}
     }};
 
-CImgProc::CImgProc(QWidget *parent){
+CImgProc::CImgProc(const QJsonObject& args, QWidget *parent)
+    : QGroupBox(parent)
+{
     this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     this->setMinimumWidth(200);
+    //new menu
+    m_vbLayOut = new QVBoxLayout(this);
+    m_qEnable = new QCheckBox("启用");
+    m_qEditEn = new QCheckBox("编辑");
+    m_btnReset = new QPushButton("重置");
+    m_btnRemove = new QPushButton("移除");
+    m_btnAddPrev = new QPushButton("前+");
+    //menu
+    QHBoxLayout* opt = new QHBoxLayout;
+    opt->addWidget(m_qEnable);
+    opt->addWidget(m_qEditEn);
+    opt->addWidget(m_btnReset);
+    opt->addWidget(m_btnAddPrev);
+    opt->addWidget(m_btnRemove);
+    m_vbLayOut->addLayout(opt);
+    connect(m_btnReset, &QPushButton::clicked, [&](){ ResetArgs(); });
+    connect(m_btnAddPrev, &QPushButton::clicked, [&](){ sigAddPrev(this); });
+    connect(m_btnRemove, &QPushButton::clicked, [&](){ sigRemove(this); });
+    connect(m_qEnable, &QPushButton::clicked, [&](){
+        sigUpdate(this);
+    });
+    connect(m_qEditEn, &QPushButton::clicked, [&](){
+        for (auto it : Args){
+            it->Widget()->setEnabled(m_qEditEn->isChecked());
+        } sigUpdate(this);
+    });
+    m_qEnable->setChecked(args.value("m_qEnable").toBool(true));
 }
 // CImgProc::~CImgProc(){
 //     for (auto it : Args){ it->deleteLater(); }
@@ -34,7 +63,10 @@ CImgProc* CImgProc::NewProc(const QString& key, const QJsonObject& args)
 {
     auto func = hsProcNew.value(key);
     if(!func) { return NULL; }
-    return (*func)(args);
+    auto proc = (*func)(args);
+    if (!proc) { return NULL; }
+    proc->InitUI();
+    return proc;
 }
 
 SPMSG CImgProc::SelectProc()
@@ -81,39 +113,17 @@ SPMSG CImgProc::SelectProc()
     return SPNULL("");
 }
 
-SPMSG CImgProc::InitUI(const QJsonObject& args)
+SPMSG CImgProc::InitUI()
 {
-    //menu
-    QHBoxLayout* opt = new QHBoxLayout;
-    opt->addWidget(m_qEnable);
-    opt->addWidget(m_qEditEn);
-    opt->addWidget(m_btnReset);
-    //opt->addWidget(m_btnAddNext);
-    opt->addWidget(m_btnRemove);
-    m_vbLayOut->addLayout(opt);
-    QGroupBox::setLayout(m_vbLayOut);
-    QGroupBox::setTitle(Title());
-    QGroupBox::setToolTip(ToolTip());
-    connect(m_btnReset, &QPushButton::clicked, [&](){ ResetArgs(); });
-    connect(m_btnAddNext, &QPushButton::clicked, [&](){ sigAddNext(this); });
-    connect(m_btnRemove, &QPushButton::clicked, [&](){ sigRemove(this); });
-    connect(m_qEnable, &QPushButton::clicked, [&](){
-        sigUpdate(this);
-    });
-    connect(m_qEditEn, &QPushButton::clicked, [&](){
-        for (auto it : Args){
-            it->Widget()->setEnabled(m_qEditEn->isChecked());
-        } sigUpdate(this);
-    });
     //args
     for (auto it=Args.begin(); it!=Args.end(); it++){
-        auto& a = it.value();
-        a->Widget()->setToolTip(it.key());
-        m_vbLayOut->addWidget(a->Widget());
-        connect(a, &CProcArgs::sigChanged, [&](CProcArgs* a){ sigUpdate(this, a); });
+        it.value()->Widget()->setToolTip(it.key());
+        connect(it.value(), &CProcArgs::sigChanged, [&](CProcArgs* a){ sigUpdate(this, a); });
     }
+    QGroupBox::setLayout(m_vbLayOut);
+    QGroupBox::setTitle(GrpTitle());
+    QGroupBox::setToolTip(ToolTip());
     m_qEditEn->clicked(m_qEditEn->isChecked());
-    m_qEnable->setChecked(args.value("m_qEnable").toBool(true));
     return ResetArgs();
 }
 

@@ -37,7 +37,7 @@ public:
     SPMSG InitUI();
 
 private slots:
-    SPMSG slotProcess2D(CImgProc* p=NULL);
+    SPMSG slotProcess2D(CImgProc* pCurProc=NULL);
     void on_pushButton_opendir_clicked();
     void on_pushButton_opendir_clicked(QString dir);
     void on_pushButton_savedir_clicked();
@@ -64,6 +64,8 @@ private slots:
     void on_tabWidget_2D_currentChanged(int index);
 
     void on_checkBox_editen_clicked();
+
+    void on_checkBox_follow_clicked();
 
 private:
     Ui::MainWindow *ui;

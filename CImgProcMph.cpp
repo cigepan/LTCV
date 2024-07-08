@@ -2,11 +2,11 @@
 
 //---------------------------------CImgProc_morphologyEx--------------------------------------
 CImgProc_morphologyEx::CImgProc_morphologyEx(const QJsonObject& args, QWidget *parent)
-    : CImgProc(parent)
+    : CImgProc(args, parent)
 {
+    auto grp = NewGrp<QVBoxLayout>();
     {
-        auto op = new CProcArgs_QComboBox(this);
-        Args["op"] = op;
+        auto op = NewArg<CProcArgs_QComboBox>("op", grp);
         op->Init(args.value("op").toString("MORPH_ERODE"), {{
                                                    {MORPH_ERODE,{"MORPH_ERODE","腐蚀"}},
                                                    {MORPH_DILATE,{"MORPH_DILATE","膨胀"}},
@@ -19,12 +19,10 @@ CImgProc_morphologyEx::CImgProc_morphologyEx(const QJsonObject& args, QWidget *p
                                                }});
     }
     {
-        auto kernel = new CProcArgs_QSpinBox(this);
-        Args["kernel"] = kernel;
+        auto kernel = NewArg<CProcArgs_QSpinBox>("kernel", grp);
         kernel->Init(args.value("kernel").toInt(5));
         kernel->UI<QSpinBox>()->setRange(1, 255);
     }
-    InitUI(args);
 }
 
 SPMSG CImgProc_morphologyEx::Process(Mat& src, Mat& dst)
