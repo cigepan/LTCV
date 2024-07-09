@@ -113,23 +113,23 @@ SPMSG CImgProc_findContours1::Process(Mat& src, Mat& dst)
         auto mode = Arg("mode")->CvType<RetrievalModes>();
         auto method = Arg("method")->CvType<ContourApproximationModes>();
         vector<vector<Point>> find_ctr;
-        vector<vector<Point>> clear_ctr;
-        findContours(dst, find_ctr, mode, method);
+        vector<Vec4i> hierachy;
+        findContours(dst, find_ctr, hierachy, mode, method);
         //draw
         auto len_close = Arg("len_close")->Get().toBool();
         auto area_min = Arg("area_min")->Get().toDouble();
         auto len_min = Arg("len_min")->Get().toDouble();
         auto cir_rio_max = Arg("cir_rio_max")->Get().toDouble();
-        for (auto& ctr : find_ctr){
-            auto area = contourArea(ctr);
+        Mat mask=Mat::ones(src.size(), src.type());
+        for (auto i=0; i<find_ctr.size(); i++){
+            auto& ctr = find_ctr[i];
+            double area = contourArea(ctr);
             auto len = arcLength(ctr, len_close);
             if (len_min>len || area_min>area
                     || cir_rio_max<((4*CV_PI*area)/(len*len))){
-                clear_ctr.push_back(ctr);
+                drawContours(mask, find_ctr, i, 0, -1, LINE_8, hierachy, 0, Point(0,0));
             }
         }
-        Mat mask=Mat::ones(src.size(), src.type());
-        drawContours(mask, clear_ctr, -1, 0, -1);
         bitwise_and(src, src, dst, mask);
         return _ok;
     } catch (cv::Exception e) {

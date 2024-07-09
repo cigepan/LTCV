@@ -39,8 +39,9 @@ SPMSG CImgProc_GaussianBlur::Process(Mat& src, Mat& dst)
 CImgProc_medianBlur::CImgProc_medianBlur(const QJsonObject& args, QWidget *parent)
     : CImgProc(args, parent)
 {
+    auto grp = NewGrp<QHBoxLayout>();
     {
-        auto ksize = NewArg<CProcArgs_QSpinBox>("ksize");
+        auto ksize = NewArg<CProcArgs_QSpinBox>("ksize", grp);
         ksize->Init(args.value("ksize").toInt(5));
         ksize->UI<QSpinBox>()->setRange(1, 255);
     }
